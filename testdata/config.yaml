@@ -1,0 +1,36 @@
+k8ssaauth:
+  auth_type: serviceAccount
+  resource_attributes:
+    group: "telemetry.opentelemetry.io"
+    version: "v1"
+    resource: "telemetry"
+    verb: "export"
+
+k8ssaauth/with_namespace:
+  auth_type: serviceAccount
+  resource_attributes:
+    group: "telemetry.opentelemetry.io"
+    version: "v1"
+    resource: "telemetry"
+    verb: "export"
+    namespace: "observability"
+
+k8ssaauth/kubeconfig:
+  auth_type: kubeConfig
+  resource_attributes:
+    group: "apps"
+    version: "v1"
+    resource: "deployments"
+    verb: "get"
+
+k8ssaauth/missing_resource:
+  auth_type: serviceAccount
+  resource_attributes:
+    verb: "export"
+
+k8ssaauth/missing_verb:
+  auth_type: serviceAccount
+  resource_attributes:
+    resource: "telemetry"
+
+# Made with Bob
