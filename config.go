@@ -43,6 +43,10 @@ type Config struct {
 
 	// Scheme specifies the auth-scheme for the token. Defaults to "Bearer"
 	Scheme string `mapstructure:"scheme,omitempty"`
+
+	// Audiences specifies the expected audiences in the token.
+	// Defaults to ["https://kubernetes.default.svc"].
+	Audiences []string `mapstructure:"audiences,omitempty"`
 }
 
 var (

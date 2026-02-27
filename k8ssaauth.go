@@ -133,6 +133,11 @@ func (k *k8sSAAuth) validateToken(ctx context.Context, token string) (*authentic
 		},
 	}
 
+	// Set audiences if configured
+	if len(k.cfg.Audiences) > 0 {
+		tokenReview.Spec.Audiences = k.cfg.Audiences
+	}
+
 	// Call TokenReview API
 	result, err := k.client.AuthenticationV1().TokenReviews().Create(ctx, tokenReview, metav1.CreateOptions{})
 	if err != nil {

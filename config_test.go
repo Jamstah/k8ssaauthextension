@@ -35,8 +35,9 @@ func TestLoadConfig(t *testing.T) {
 					Resource: "telemetry",
 					Verb:     "export",
 				},
-				Header: "Authorization",
-				Scheme: "Bearer",
+				Header:    "Authorization",
+				Scheme:    "Bearer",
+				Audiences: []string{"https://kubernetes.default.svc"},
 			},
 		},
 		{
@@ -52,8 +53,9 @@ func TestLoadConfig(t *testing.T) {
 					Verb:      "export",
 					Namespace: "observability",
 				},
-				Header: "Authorization",
-				Scheme: "Bearer",
+				Header:    "Authorization",
+				Scheme:    "Bearer",
+				Audiences: []string{"https://kubernetes.default.svc"},
 			},
 		},
 		{
@@ -68,8 +70,43 @@ func TestLoadConfig(t *testing.T) {
 					Resource: "deployments",
 					Verb:     "get",
 				},
-				Header: "Authorization",
-				Scheme: "Bearer",
+				Header:    "Authorization",
+				Scheme:    "Bearer",
+				Audiences: []string{"https://kubernetes.default.svc"},
+			},
+		},
+		{
+			id: component.NewIDWithName(metadata.Type, "custom_audience"),
+			expected: &Config{
+				APIConfig: k8sconfig.APIConfig{
+					AuthType: k8sconfig.AuthTypeServiceAccount,
+				},
+				ResourceAttributes: ResourceAttributes{
+					Group:    "telemetry.opentelemetry.io",
+					Version:  "v1",
+					Resource: "telemetry",
+					Verb:     "export",
+				},
+				Header:    "Authorization",
+				Scheme:    "Bearer",
+				Audiences: []string{"custom-audience"},
+			},
+		},
+		{
+			id: component.NewIDWithName(metadata.Type, "multiple_audiences"),
+			expected: &Config{
+				APIConfig: k8sconfig.APIConfig{
+					AuthType: k8sconfig.AuthTypeServiceAccount,
+				},
+				ResourceAttributes: ResourceAttributes{
+					Group:    "telemetry.opentelemetry.io",
+					Version:  "v1",
+					Resource: "telemetry",
+					Verb:     "export",
+				},
+				Header:    "Authorization",
+				Scheme:    "Bearer",
+				Audiences: []string{"audience1", "audience2", "https://kubernetes.default.svc"},
 			},
 		},
 		{

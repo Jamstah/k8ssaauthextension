@@ -33,4 +33,26 @@ k8ssaauth/missing_verb:
   resource_attributes:
     resource: "telemetry"
 
+k8ssaauth/custom_audience:
+  auth_type: serviceAccount
+  resource_attributes:
+    group: "telemetry.opentelemetry.io"
+    version: "v1"
+    resource: "telemetry"
+    verb: "export"
+  audiences:
+    - "custom-audience"
+
+k8ssaauth/multiple_audiences:
+  auth_type: serviceAccount
+  resource_attributes:
+    group: "telemetry.opentelemetry.io"
+    version: "v1"
+    resource: "telemetry"
+    verb: "export"
+  audiences:
+    - "audience1"
+    - "audience2"
+    - "https://kubernetes.default.svc"
+
 # Made with Bob

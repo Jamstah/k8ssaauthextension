@@ -113,17 +113,19 @@ func TestExtractToken(t *testing.T) {
 
 func TestValidateToken(t *testing.T) {
 	tests := []struct {
-		name          string
-		token         string
-		authenticated bool
-		userInfo      authenticationv1.UserInfo
-		reviewError   string
-		wantErr       bool
-		errContains   string
-		expectedUser  *authenticationv1.UserInfo
+		name            string
+		token           string
+		authenticated   bool
+		userInfo        authenticationv1.UserInfo
+		tokenAudiences  []string
+		configAudiences []string
+		reviewError     string
+		wantErr         bool
+		errContains     string
+		expectedUser    *authenticationv1.UserInfo
 	}{
 		{
-			name:          "valid token",
+			name:          "valid token with default audience",
 			token:         "valid-token",
 			authenticated: true,
 			userInfo: authenticationv1.UserInfo{
@@ -131,12 +133,77 @@ func TestValidateToken(t *testing.T) {
 				UID:      "test-uid",
 				Groups:   []string{"system:serviceaccounts", "system:authenticated"},
 			},
-			wantErr: false,
+			tokenAudiences:  []string{"https://kubernetes.default.svc"},
+			configAudiences: []string{"https://kubernetes.default.svc"},
+			wantErr:         false,
 			expectedUser: &authenticationv1.UserInfo{
 				Username: "system:serviceaccount:default:test-sa",
 				UID:      "test-uid",
 				Groups:   []string{"system:serviceaccounts", "system:authenticated"},
 			},
+		},
+		{
+			name:          "valid token with custom audience",
+			token:         "valid-token",
+			authenticated: true,
+			userInfo: authenticationv1.UserInfo{
+				Username: "system:serviceaccount:default:test-sa",
+				UID:      "test-uid",
+				Groups:   []string{"system:serviceaccounts", "system:authenticated"},
+			},
+			tokenAudiences:  []string{"custom-audience"},
+			configAudiences: []string{"custom-audience"},
+			wantErr:         false,
+			expectedUser: &authenticationv1.UserInfo{
+				Username: "system:serviceaccount:default:test-sa",
+				UID:      "test-uid",
+				Groups:   []string{"system:serviceaccounts", "system:authenticated"},
+			},
+		},
+		{
+			name:          "valid token with multiple audiences - match first",
+			token:         "valid-token",
+			authenticated: true,
+			userInfo: authenticationv1.UserInfo{
+				Username: "system:serviceaccount:default:test-sa",
+				UID:      "test-uid",
+				Groups:   []string{"system:serviceaccounts", "system:authenticated"},
+			},
+			tokenAudiences:  []string{"audience1", "audience2"},
+			configAudiences: []string{"audience1", "audience3"},
+			wantErr:         false,
+			expectedUser: &authenticationv1.UserInfo{
+				Username: "system:serviceaccount:default:test-sa",
+				UID:      "test-uid",
+				Groups:   []string{"system:serviceaccounts", "system:authenticated"},
+			},
+		},
+		{
+			name:          "valid token with multiple audiences - match second",
+			token:         "valid-token",
+			authenticated: true,
+			userInfo: authenticationv1.UserInfo{
+				Username: "system:serviceaccount:default:test-sa",
+				UID:      "test-uid",
+				Groups:   []string{"system:serviceaccounts", "system:authenticated"},
+			},
+			tokenAudiences:  []string{"audience1", "audience2"},
+			configAudiences: []string{"audience3", "audience2"},
+			wantErr:         false,
+			expectedUser: &authenticationv1.UserInfo{
+				Username: "system:serviceaccount:default:test-sa",
+				UID:      "test-uid",
+				Groups:   []string{"system:serviceaccounts", "system:authenticated"},
+			},
+		},
+		{
+			name:            "token with wrong audience",
+			token:           "valid-token",
+			authenticated:   false,
+			configAudiences: []string{"https://kubernetes.default.svc"},
+			reviewError:     "[invalid bearer token, token audiences [\"telemetry\"] is invalid for the target audiences [\"https://kubernetes.default.svc\"], token lookup failed]",
+			wantErr:         true,
+			errContains:     "invalid for the target audiences",
 		},
 		{
 			name:          "invalid token",
@@ -154,11 +221,16 @@ func TestValidateToken(t *testing.T) {
 
 			// Mock TokenReview response
 			fakeClient.PrependReactor("create", "tokenreviews", func(action k8stesting.Action) (bool, runtime.Object, error) {
+				obj := action.(k8stesting.CreateAction).GetObject()
+				tokenreview, _ := obj.(*authenticationv1.TokenReview)
+				assert.Equal(t, tt.token, tokenreview.Spec.Token)
+				assert.Equal(t, tt.configAudiences, tokenreview.Spec.Audiences)
 				review := &authenticationv1.TokenReview{
 					Status: authenticationv1.TokenReviewStatus{
 						Authenticated: tt.authenticated,
 						User:          tt.userInfo,
 						Error:         tt.reviewError,
+						Audiences:     tt.tokenAudiences,
 					},
 				}
 				return true, review, nil
@@ -170,6 +242,7 @@ func TestValidateToken(t *testing.T) {
 						Resource: "telemetry",
 						Verb:     "export",
 					},
+					Audiences: tt.configAudiences,
 				},
 				client: fakeClient,
 				logger: zaptest.NewLogger(t),

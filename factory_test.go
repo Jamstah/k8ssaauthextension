@@ -25,8 +25,9 @@ func TestCreateDefaultConfig(t *testing.T) {
 		APIConfig: k8sconfig.APIConfig{
 			AuthType: k8sconfig.AuthTypeServiceAccount,
 		},
-		Header: defaultHeader,
-		Scheme: defaultScheme,
+		Header:    defaultHeader,
+		Scheme:    defaultScheme,
+		Audiences: []string{defaultK8sAudience},
 	}
 	assert.Equal(t, expectedCfg, cfg)
 }

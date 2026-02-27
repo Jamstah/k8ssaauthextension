@@ -13,8 +13,9 @@ import (
 )
 
 const (
-	defaultHeader = "Authorization"
-	defaultScheme = "Bearer"
+	defaultHeader      = "Authorization"
+	defaultScheme      = "Bearer"
+	defaultK8sAudience = "https://kubernetes.default.svc"
 )
 
 // NewFactory creates a factory for the Kubernetes service account authenticator extension.
@@ -32,8 +33,9 @@ func createDefaultConfig() component.Config {
 		APIConfig: k8sconfig.APIConfig{
 			AuthType: k8sconfig.AuthTypeServiceAccount,
 		},
-		Header: defaultHeader,
-		Scheme: defaultScheme,
+		Header:    defaultHeader,
+		Scheme:    defaultScheme,
+		Audiences: []string{defaultK8sAudience},
 	}
 }
 

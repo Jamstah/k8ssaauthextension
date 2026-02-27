@@ -41,6 +41,8 @@ The extension performs two-step authentication and authorization:
 
 - `scheme` (default: `"Bearer"`): Authentication scheme prefix
 
+- `audiences` (default: `["https://kubernetes.default.svc"]`): The token must contain one of these audiences. The default works with standard Kubernetes service account. The recommended approach is to use a custom audience with a [projected service account token](https://kubernetes.io/docs/concepts/storage/projected-volumes/#serviceaccounttoken) with a defined audience.
+
 ### Example Configuration
 
 ```yaml
@@ -258,9 +260,9 @@ provider.add_span_processor(BatchSpanProcessor(exporter))
 
 2. **TLS**: Always use TLS for the collector endpoints when using bearer token authentication.
 
-3. **Least Privilege**: Grant only the minimum required permissions to service accounts. Consider using a [projected service account token](https://kubernetes.io/docs/concepts/storage/projected-volumes/#serviceaccounttoken) with a defined audience.
+3. **Least Privilege**: Grant only the minimum required permissions to service accounts.
 
-4. **Audit Logging**: Enable Kubernetes audit logging to track authentication and authorization events.
+4. **Token audience**: Use a [projected service account token](https://kubernetes.io/docs/concepts/storage/projected-volumes/#serviceaccounttoken) with a defined audience so that tokens used for authorizing export aren't trusted by the Kubernetes API to perform other actions.
 
 ## Troubleshooting
 
