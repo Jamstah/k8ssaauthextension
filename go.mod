@@ -1,4 +1,4 @@
-module github.com/jamstah/otel-k8ssaauth
+module github.com/jamstah/k8ssaauthextension
 
 go 1.25.0
 

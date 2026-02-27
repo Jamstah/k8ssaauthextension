@@ -7,7 +7,7 @@
 # https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol
 
 dist:
-  module: github.com/jamstah/otel-k8ssaauth/cmd/k8ssaauthcollector
+  module: github.com/jamstah/k8ssaauthextension/cmd/k8ssaauthcollector
   name: k8ssaauthcollector
   output_path: build
   description: Local OpenTelemetry Collector binary, testing only.
@@ -24,8 +24,7 @@ exporters:
 extensions:
   - gomod: go.opentelemetry.io/collector/extension/memorylimiterextension v0.146.1
   - gomod: go.opentelemetry.io/collector/extension/zpagesextension v0.146.1
-  - gomod: github.com/jamstah/otel-k8ssaauth v0.0.1
-    name: k8ssaauthextension
+  - gomod: github.com/jamstah/k8ssaauthextension v0.0.1
     path: ./
 processors:
   - gomod: go.opentelemetry.io/collector/processor/batchprocessor v0.146.1

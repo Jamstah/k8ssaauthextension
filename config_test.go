@@ -11,8 +11,8 @@ import (
 	"go.opentelemetry.io/collector/component"
 	"go.opentelemetry.io/collector/confmap/confmaptest"
 
-	"github.com/jamstah/otel-k8ssaauth/internal/k8sconfig"
-	"github.com/jamstah/otel-k8ssaauth/internal/metadata"
+	"github.com/jamstah/k8ssaauthextension/internal/k8sconfig"
+	"github.com/jamstah/k8ssaauthextension/internal/metadata"
 )
 
 func TestLoadConfig(t *testing.T) {

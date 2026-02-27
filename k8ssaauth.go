@@ -17,7 +17,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 
-	"github.com/jamstah/otel-k8ssaauth/internal/k8sconfig"
+	"github.com/jamstah/k8ssaauthextension/internal/k8sconfig"
 )
 
 var (

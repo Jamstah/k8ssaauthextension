@@ -7,7 +7,7 @@ import (
 
 	"go.opentelemetry.io/collector/component"
 
-	"github.com/jamstah/otel-k8ssaauth/internal/k8sconfig"
+	"github.com/jamstah/k8ssaauthextension/internal/k8sconfig"
 )
 
 // ResourceAttributes defines the Kubernetes resource and action to check for authorization

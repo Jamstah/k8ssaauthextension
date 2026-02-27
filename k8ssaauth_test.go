@@ -15,7 +15,7 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 	k8stesting "k8s.io/client-go/testing"
 
-	"github.com/jamstah/otel-k8ssaauth/internal/k8sconfig"
+	"github.com/jamstah/k8ssaauthextension/internal/k8sconfig"
 )
 
 func TestExtractToken(t *testing.T) {
