@@ -33,9 +33,10 @@ var (
 
 // k8sSAAuth implements server-side authentication using Kubernetes service account tokens
 type k8sSAAuth struct {
-	cfg    *Config
-	client kubernetes.Interface
-	logger *zap.Logger
+	cfg           *Config
+	client        kubernetes.Interface
+	logger        *zap.Logger
+	resourceAttrs *authorizationv1.ResourceAttributes
 }
 
 // newK8sSAAuth creates a new Kubernetes service account authenticator
@@ -52,13 +53,32 @@ func newK8sSAAuth(cfg *Config, logger *zap.Logger) (extension.Extension, error) 
 	}, nil
 }
 
-// Start does nothing for this extension
+// Start initializes the extension
 func (k *k8sSAAuth) Start(_ context.Context, _ component.Host) error {
 	k.logger.Info("Starting Kubernetes service account authenticator",
 		zap.String("resource", k.cfg.ResourceAttributes.Resource),
 		zap.String("verb", k.cfg.ResourceAttributes.Verb),
 		zap.String("namespace", k.cfg.ResourceAttributes.Namespace),
 	)
+
+	// Build resource attributes for the access review
+	k.resourceAttrs = &authorizationv1.ResourceAttributes{
+		Verb:     k.cfg.ResourceAttributes.Verb,
+		Group:    k.cfg.ResourceAttributes.Group,
+		Version:  k.cfg.ResourceAttributes.Version,
+		Resource: k.cfg.ResourceAttributes.Resource,
+	}
+
+	// Add namespace if specified
+	if k.cfg.ResourceAttributes.Namespace != "" {
+		k.resourceAttrs.Namespace = k.cfg.ResourceAttributes.Namespace
+	}
+
+	// Add resource name if specified
+	if k.cfg.ResourceAttributes.Name != "" {
+		k.resourceAttrs.Name = k.cfg.ResourceAttributes.Name
+	}
+
 	return nil
 }
 
@@ -158,31 +178,13 @@ func (k *k8sSAAuth) validateToken(ctx context.Context, token string) (*authentic
 
 // checkPermission checks if the user has permission using SubjectAccessReview API
 func (k *k8sSAAuth) checkPermission(ctx context.Context, userInfo *authenticationv1.UserInfo) error {
-	// Build resource attributes for the access review
-	resourceAttrs := &authorizationv1.ResourceAttributes{
-		Verb:     k.cfg.ResourceAttributes.Verb,
-		Group:    k.cfg.ResourceAttributes.Group,
-		Version:  k.cfg.ResourceAttributes.Version,
-		Resource: k.cfg.ResourceAttributes.Resource,
-	}
-
-	// Add namespace if specified
-	if k.cfg.ResourceAttributes.Namespace != "" {
-		resourceAttrs.Namespace = k.cfg.ResourceAttributes.Namespace
-	}
-
-	// Add resource name if specified
-	if k.cfg.ResourceAttributes.Name != "" {
-		resourceAttrs.Name = k.cfg.ResourceAttributes.Name
-	}
-
 	// Create SubjectAccessReview request
 	sar := &authorizationv1.SubjectAccessReview{
 		Spec: authorizationv1.SubjectAccessReviewSpec{
 			User:               userInfo.Username,
 			UID:                userInfo.UID,
 			Groups:             userInfo.Groups,
-			ResourceAttributes: resourceAttrs,
+			ResourceAttributes: k.resourceAttrs,
 		},
 	}
 
